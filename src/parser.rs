@@ -60,7 +60,6 @@ pub fn parse(string: String) -> Result<Option<u32>, String> {
         7 => { Ok(Some(halt())) }
         13 => { parse_movi(opcode, args)}
         n => {
-            println!("{}, {}", n, argc);
             if argc == 2 { parse_2_arg(opcode, args)}
             else if argc == 3 { parse_3_arg(opcode, args)}
             else if argc == 4 { parse_4_arg(opcode, args)}
@@ -143,8 +142,17 @@ fn parse_movi(op: u32, args: Vec<&str>) -> Result<Option<u32>, String>{
 
     let (_, rl) = args[1].split_at(n1.unwrap() + 1);
     let (_, temp) = args[2].split_at(1);
-    let lv = temp.parse::<u32>().unwrap();
-
+    let lv = temp.parse::<u32>();
+    
+    match lv{
+        Err(e) => {
+            return Err(format!("[ERROR] Could not parse immediate value! Did you forget the '#' before the value?"));
+        }
+        Ok(_) => {}
+    }
+    
+    let lv = lv.unwrap();
+    
     if lv >= max_num!(){
         // just in case
         return Err(format!("[ERROR] Immediate value exceeded 25 bits! value: {}.", lv));
