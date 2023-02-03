@@ -1,8 +1,9 @@
+use std::collections::HashMap;
 use lazy_static::lazy_static;
 
 lazy_static! {
-    static ref OPS: std::collections::HashMap<&'static str, (u32, u32)> = {
-        let mut m = std::collections::HashMap::new();
+    static ref OPS: HashMap<&'static str, (u32, u32)> = {
+        let mut m = HashMap::new();
         m.insert("cmov", (0, 4));
         m.insert("load", (1, 4));
         m.insert("store", (2, 4));
@@ -31,7 +32,7 @@ macro_rules! max_num {
 /// Returns an instruction based on the given string.
 pub fn parse(string: String) -> Result<Option<u32>, String> {
     let a = string.trim();
-    if string == ""{
+    if string == "" || string.contains(":"){
         return Ok(None);
     }
 
@@ -59,7 +60,7 @@ pub fn parse(string: String) -> Result<Option<u32>, String> {
     match opcode{
         7 => { Ok(Some(halt())) }
         13 => { parse_movi(opcode, args)}
-        n => {
+        _ => {
             if argc == 2 { parse_2_arg(opcode, args)}
             else if argc == 3 { parse_3_arg(opcode, args)}
             else if argc == 4 { parse_4_arg(opcode, args)}
@@ -145,7 +146,7 @@ fn parse_movi(op: u32, args: Vec<&str>) -> Result<Option<u32>, String>{
     let lv = temp.parse::<u32>();
     
     match lv{
-        Err(e) => {
+        Err(_) => {
             return Err(format!("[ERROR] Could not parse immediate value! Did you forget the '#' before the value?"));
         }
         Ok(_) => {}

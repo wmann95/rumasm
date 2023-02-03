@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::env::args;
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
@@ -64,7 +65,7 @@ fn linter(input: String) -> Vec<String>{
     let mut line_number = 1;
     for line in BufReader::new(file).lines(){
         let out = parse(line.unwrap());
-
+        
         if out.is_err() {
             let e = out.err().unwrap();
             let error = format!("{} Line number: {}", e, line_number);
@@ -91,10 +92,30 @@ fn assembler(input: String) -> Vec<[u8; 4]>{
     }
     
     let mut instructions = Vec::new();
-
-    let mut line_number = 1;
-    for line in BufReader::new(file).lines(){
-        let out = parse(line.unwrap());
+    let mut labels: HashMap<String, u32> = HashMap::new();
+    
+    let mut lines = Vec::new();
+    
+    let mut instruction_number = 0;
+    for line in BufReader::new(file.try_clone().unwrap()).lines(){
+        let l = line.unwrap();
+        
+        if l.contains(":") { // Label identifier.
+            let (label, _) = l.split_at(l.find(":").unwrap());
+            labels.insert(label.to_string(), instruction_number);
+            continue;
+        }
+        
+        lines.push(l);
+        instruction_number += 1;
+    }
+    
+    for i in labels{
+        println!("{}, {}", i.0, i.1);
+    }
+    
+    for line in lines{
+        let out = parse(line);
         
         let p = out.ok().unwrap();
 
@@ -105,8 +126,6 @@ fn assembler(input: String) -> Vec<[u8; 4]>{
                 instructions.push(a);
             }
         }
-
-        line_number += 1;
     }
     
     return instructions;
