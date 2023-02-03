@@ -9,3 +9,4 @@ description = "A simple program to assemble a rudimentary assembly language for 
 
 [dependencies]
 lazy_static = "1.4.0"
+nom = "7.1.3"
