@@ -1,6 +1,7 @@
 use std::error::Error;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
+use lazy_static::lazy_static;
 use nom::branch::alt;
 use nom::bytes::complete::{tag, tag_no_case, take_while};
 use nom::character::complete::{alpha0, alphanumeric0, char, digit0};
@@ -8,15 +9,26 @@ use nom::sequence::{tuple, terminated, preceded};
 use nom::IResult;
 use nom::multi::many0;
 
-// fn parse_op(input: &str) -> IResult<&str, u32>{
-//     alt((
-//         tag("cmov"),
-//         tag("load"),
-//         tag("store"),
-//         tag("add")
-//     ))(input)
-// }
-
+lazy_static! {
+    static ref OPS: std::collections::HashMap<&'static str, (u32, u32)> = {
+        let mut m = std::collections::HashMap::new();
+        m.insert("cmov", (0, 4));
+        m.insert("load", (1, 4));
+        m.insert("store", (2, 4));
+        m.insert("add", (3, 4));
+        m.insert("mul", (4, 4));
+        m.insert("div", (5, 4));
+        m.insert("nand", (6, 4));
+        m.insert("halt", (7, 1));
+        m.insert("map", (8, 3));
+        m.insert("umap", (9, 2));
+        m.insert("out", (10, 2));
+        m.insert("in", (11, 2));
+        m.insert("lp", (12, 3));
+        m.insert("movi", (13, 3));
+        m
+    };
+}
 fn delimiter(input: &str) -> IResult<&str, &str> {
     tag(", ")(input)
 }
@@ -106,29 +118,22 @@ fn p3_op(input: &str) -> IResult<&str, &str>{
     ))(input)
 }
 
-fn operation(input: &str) -> IResult<&str, u32>{
+fn operation(input: &str) -> IResult<&str, &str>{
     
-    let out = alt((
+    alt((
         p0_op,
         p1_op,
         p2_op,
         p3_op
-    ))(input);
-    // match out{
-    //     Ok((rem, out)) => {
-    //         
-    //     }
-    //     Err(_) => {}
-    // }
-
-    Ok(("", 0))
+    ))(input)
 }
 
 pub fn parse_line(input: &str) -> IResult<&str, u32>{
-    
-    
-    
     let (rem, op) = terminated(operation, separator)(input)?;
+    
+    if OPS.contains_key(op.clone()){
+        
+    }
     
     let (rem, p1) = terminated(param_exp, delimiter)(rem)?;
 
