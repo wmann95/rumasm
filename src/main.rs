@@ -1,11 +1,12 @@
 use std::env::args;
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
+use rumasm::nom_parser;
 use rumasm::parser::parse;
 use rumasm::nom_parser::parse_line;
 
 fn main(){
-    parse_line("add #0b101, r2, r3");
+    nom_parser::parse("cat.rumasm");
 }
 
 // fn main(){
