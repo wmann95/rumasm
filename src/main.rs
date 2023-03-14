@@ -35,17 +35,27 @@ fn main(){
     //     std::process::exit(0);
     // }
     
-    let instructions = nom_parser::parse(input.clone().as_str());
+    let result = nom_parser::parse(input.clone().as_str());
     
-    // create an OpenOptions that allows for file creation, writing, and overwriting.
-    let mut foo = OpenOptions::new().create(true).write(true).truncate(true).open(out_name.clone()).unwrap();
-    
-    // not sure how to do this better.
-    for word in instructions{
-        foo.write_all(&word).unwrap();
+    match result{
+        Ok(instructions) => {
+            // create an OpenOptions that allows for file creation, writing, and overwriting.
+            let mut foo = OpenOptions::new().create(true).write(true).truncate(true).open(out_name.clone()).unwrap();
+
+            // not sure how to do this better.
+            for word in instructions{
+                foo.write_all(&word).unwrap();
+            }
+
+            println!("Assembly completed. Output to file: {}", out_name.clone());
+        }
+        Err(errors) => {
+            for error in errors{
+                println!("{}", error);
+            }
+        }
     }
     
-    println!("Assembly completed. Output to file: {}", out_name.clone());
 }
 
 // fn linter(input: String) -> Vec<String>{
