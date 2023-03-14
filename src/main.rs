@@ -22,7 +22,7 @@ fn main(){
         Some(s) => {s},
         None => "out.bin".to_string()
     };
-    // 
+     
     // let errors = linter(input.clone());
     // 
     // if errors.len() > 0{

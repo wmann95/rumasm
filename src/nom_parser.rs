@@ -1,4 +1,3 @@
-
 use std::fs::{File, OpenOptions};
 use std::io::{BufRead, BufReader, Write};
 use std::ops::Deref;
@@ -7,10 +6,11 @@ use nom::branch::alt;
 use nom::bytes::complete::{tag, tag_no_case, take_till, take_until, take_while};
 use nom::character::complete::{alpha0, alphanumeric0, char, digit0, one_of};
 use nom::combinator::recognize;
-use nom::error::context;
+use nom::error::{context, VerboseError};
 use nom::sequence::{tuple, terminated, preceded};
 use nom::IResult;
 use nom::multi::{many0, many1, many_till};
+use crate::linter_errors::FormattingError;
 
 lazy_static! {
     static ref OPS: std::collections::HashMap<&'static str, (u32, u32)> = {
@@ -51,7 +51,9 @@ macro_rules! op {
 pub fn parse_line(input: &str) -> u32{
     //let out = terminated(operation, separator)(input);
 
-    let out = operation(input).unwrap();
+    let buffer = operation(input);
+    
+    let out = buffer.unwrap();
     out.1
 }
 
@@ -81,8 +83,6 @@ fn file_name(input: &str) -> IResult<&str, &str>{
 
 fn operation(input: &str) -> IResult<&str, u32>{
 
-    context("", ());
-    
     alt((
         p0_op,
         p1_op,
@@ -111,11 +111,11 @@ fn p_movi(input: &str) -> IResult<&str, u32>{
 }
 
 fn p1_op(input: &str) -> IResult<&str, u32>{
-    let (rem, op) = alt((
+    let (rem, op) = context("Test context", alt((
         op!("umap"),
         op!("out"),
         op!("in"),
-    ))(input)?;
+    )))(input)?;
     
     let (rem, rc) = reg_exp(rem)?;
 
