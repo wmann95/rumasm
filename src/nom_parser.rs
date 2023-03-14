@@ -7,6 +7,7 @@ use nom::branch::alt;
 use nom::bytes::complete::{tag, tag_no_case, take_till, take_until, take_while};
 use nom::character::complete::{alpha0, alphanumeric0, char, digit0, one_of};
 use nom::combinator::recognize;
+use nom::error::context;
 use nom::sequence::{tuple, terminated, preceded};
 use nom::IResult;
 use nom::multi::{many0, many1, many_till};
@@ -54,7 +55,7 @@ pub fn parse_line(input: &str) -> u32{
     out.1
 }
 
-pub fn parse(filename: &str){
+pub fn parse(filename: &str) -> Vec<[u8; 4]>{
     let buffer = match File::open(filename){
         Ok(file) => file,
         Err(e) => panic!("Could not read file!")
@@ -71,17 +72,7 @@ pub fn parse(filename: &str){
         output.push(out.to_be_bytes());
     }
     
-    let output_filename = file_name(filename);
-    let out_name = match output_filename{
-        Ok((rem, name)) => format!("{}.bin", name),
-        Err(e) => "output.bin".to_string()
-    };
-    
-    let mut foo = OpenOptions::new().create(true).write(true).truncate(true).open(out_name.clone()).unwrap();
-
-    for inst in output{
-        foo.write_all(&inst).unwrap();
-    }
+    output
 }
 
 fn file_name(input: &str) -> IResult<&str, &str>{
@@ -89,6 +80,8 @@ fn file_name(input: &str) -> IResult<&str, &str>{
 }
 
 fn operation(input: &str) -> IResult<&str, u32>{
+
+    context("", ());
     
     alt((
         p0_op,
@@ -97,7 +90,7 @@ fn operation(input: &str) -> IResult<&str, u32>{
         p3_op,
         p_movi
     ))(input)
-    //p3_op(input)
+    
 }
 
 fn p0_op(input: &str) -> IResult<&str, u32>{
@@ -132,7 +125,6 @@ fn p1_op(input: &str) -> IResult<&str, u32>{
 
     Ok(("", inst))
 }
-
 
 fn p2_op(input: &str) -> IResult<&str, u32>{
     let (rem, op) = alt((
@@ -178,7 +170,6 @@ fn p3_op(input: &str) -> IResult<&str, u32>{
 fn halt(input: &str) -> IResult<&str, &str>{
     tag_no_case("halt")(input)
 }
-
 
 fn delimiter(input: &str) -> IResult<&str, &str> {
     tag(", ")(input)
